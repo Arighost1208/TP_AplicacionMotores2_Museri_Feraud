@@ -84,7 +84,14 @@ public class WayPointManagerInspector : Editor
                     float originalValue = EditorGUIUtility.labelWidth;
                     EditorGUIUtility.fieldWidth = 2;
                     EditorGUIUtility.labelWidth = 1;
-                    
+
+                    //Al eliminar un wayPoint tambien elimino su posicion en la lista de _waypoints                   
+                    if (GUILayout.Button("Delete"))
+                    {
+                        //   _waypoints.Remove(wpm.transform.GetChild(i - 1).localPosition);
+                        DestroyImmediate(wpm.transform.GetChild(i - 1).gameObject);
+                    }
+
                     //se agrega esta validacion ya que el GetComponentsInChildren tiene en cuenta al padre
                     //y el GetChild solo a los hijos 
                     if (wpm.GetComponentsInChildren<Transform>().Length > i)
@@ -118,7 +125,24 @@ public class WayPointManagerInspector : Editor
         }
        
         EditorGUILayout.Space();
-  
+
+        if (GUILayout.Button("Create Path"))
+        {
+            int _childCount = wpm.GetComponentsInChildren(typeof(Transform)).Length;
+
+            if (_childCount > 1)
+            {
+                GameObject go = new GameObject(wpm.path);
+
+                for (int i = _childCount - 1; i >= 1; i--)
+                {
+                    if (i > 0)
+                        wpm.GetComponentsInChildren<Transform>()[i].parent = go.transform;
+                }
+            }
+            //else agregar msj que debe crear un vector minimamente
+        }
+
         EditorGUILayout.Space();
     }
 
