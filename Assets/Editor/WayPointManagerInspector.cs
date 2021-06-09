@@ -8,9 +8,11 @@ using System.Linq;
 public class WayPointManagerInspector : Editor
 {
     WayPointManager wpm;
-    List<Vector3> _waypoints;
     GUIStyle titleStyle;
     int _childrenCount;
+    bool _error;
+    string _msg;
+
     private void OnEnable()
     {
         wpm = target as WayPointManager;
@@ -18,25 +20,18 @@ public class WayPointManagerInspector : Editor
         titleStyle.alignment = TextAnchor.MiddleCenter;
         titleStyle.fontSize = 15;
         titleStyle.fontStyle = FontStyle.BoldAndItalic;
-
-        _waypoints = new List<Vector3>();
-
+  
         //Recorro los hijos del WayPointManager y mientras no sea el padre( i = 0 )
         // agrego su posicion a la lista.
         _childrenCount = wpm.GetComponentsInChildren(typeof(Transform)).Length - 1;
-        //if(wpm.GetComponentsInChildren(typeof(Transform)).Length > 0)
-        //{
-        //    for (int i = 0; i < wpm.GetComponentsInChildren(typeof(Transform)).Length; i++)
-        //    {
-        //        if (i > 0)
-        //            _waypoints.Add(wpm.GetComponentsInChildren<Transform>()[i].position);
-        //    }
-        //}
-
+        
     }
 
     public override void OnInspectorGUI()
     {
+        if (_error)
+            ErrorMessage(_msg);
+
         EditorGUILayout.Space();
 
         wpm.path = EditorGUILayout.TextField("Name Path : ", wpm.path);
@@ -49,14 +44,12 @@ public class WayPointManagerInspector : Editor
 
         if (GUILayout.Button("Create WayPoint"))
         {
-
-            //string wpName = "Waypoint " + (_waypoints.Count()+1);
+  
             string wpName = "Waypoint " + (_childrenCount + 1) ;
             GameObject go = new GameObject(wpName);
             go.transform.localPosition = wpm._pos;
             go.AddComponent<BoxCollider>();
-            go.transform.parent = wpm.transform;
-          //  _waypoints.Add(wpm._pos);
+            go.transform.parent = wpm.transform;     
             wpm._pos = Vector3.zero;
         }
 
@@ -88,7 +81,6 @@ public class WayPointManagerInspector : Editor
                     //Al eliminar un wayPoint tambien elimino su posicion en la lista de _waypoints                   
                     if (GUILayout.Button("Delete"))
                     {
-                        //   _waypoints.Remove(wpm.transform.GetChild(i - 1).localPosition);
                         DestroyImmediate(wpm.transform.GetChild(i - 1).gameObject);
                     }
 
@@ -132,6 +124,7 @@ public class WayPointManagerInspector : Editor
 
             if (_childCount > 1)
             {
+                _error = false;
                 GameObject go = new GameObject(wpm.path);
 
                 for (int i = _childCount - 1; i >= 1; i--)
@@ -140,7 +133,12 @@ public class WayPointManagerInspector : Editor
                         wpm.GetComponentsInChildren<Transform>()[i].parent = go.transform;
                 }
             }
-            //else agregar msj que debe crear un vector minimamente
+            
+            else
+            {
+                _error = true;
+                _msg = "You must add a vector";
+            }
         }
 
         EditorGUILayout.Space();
@@ -159,5 +157,10 @@ public class WayPointManagerInspector : Editor
             Handles.SphereHandleCap(i, wpm.GetComponentsInChildren<Transform>()[i].localPosition, Quaternion.identity, 1f, Event.current.type);
         }
 
+    }
+
+    private void ErrorMessage(string msg)
+    {
+        EditorGUILayout.HelpBox(msg, MessageType.Error);
     }
 }
