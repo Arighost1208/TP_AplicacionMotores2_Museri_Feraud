@@ -39,7 +39,6 @@ public class WayPointManagerInspector : Editor
 
         EditorGUILayout.Space();
 
-        //wpm._pos = EditorGUILayout.Vector3Field("VectorPos", wpm._pos);
         wpm._pos = UpdateVectorPos(wpm._pos);
 
         EditorGUILayout.Space();
@@ -48,14 +47,12 @@ public class WayPointManagerInspector : Editor
         {
   
             string wpName = "Waypoint " + (_childrenCount + 1) ;
-            GameObject go = new GameObject(wpName);
-            //go.transform.localPosition = wpm._pos;
-           
+            GameObject go = new GameObject(wpName);  
             go.AddComponent<BoxCollider>().isTrigger = true;
             go.transform.parent = wpm.transform;
             go.transform.localPosition = wpm._pos;
              wpm._pos = Vector3.zero;
-            // wpm.transform.position = wpm._pos;
+         
             wpm.transform.position = Vector3.zero;
         }
 
@@ -94,13 +91,11 @@ public class WayPointManagerInspector : Editor
                        UpdateVectorPos( i,wpm.transform.GetChild(i - 1).localPosition);
                         wpm.transform.GetChild(i-1).name = "Waypoint " + (i);
                     }
-
                     EditorGUILayout.EndHorizontal();
 
                     EditorGUILayout.Space();
                    
-                }
-                    
+                }             
             }
 
             EditorGUILayout.Space();
