@@ -150,7 +150,7 @@ public class WayPointManagerInspector : Editor
             wpm.GetComponentsInChildren<Transform>()[0].localPosition = Vector3.zero;
 
         Handles.color = Color.red;
-        if (wpm.GetComponentsInChildren(typeof(Transform)).Length == 1)  
+        if (wpm.GetComponentsInChildren(typeof(Transform)).Length == 1 )  
             wpm._pos = Handles.PositionHandle(wpm.transform.position, wpm.transform.rotation);
 
        else

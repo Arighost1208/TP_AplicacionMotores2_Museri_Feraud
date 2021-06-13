@@ -4,25 +4,30 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class Patrol : MonoBehaviour
 {
-   
-    public float patrolSpeed = 0f;
-    public float changeTargetDistance = 0.1f;
-    public Transform[] patrolWaypoints;
 
-    public int currentTarget = 0;
+    float patrolSpeed = 5f;
+    float changeTargetDistance = 0.5f;
+    public Transform patrolWaypoints;
+   
+     public int currentTarget = 1;
 
     void Update()
     {
-        if (MoveToTarget())
+        if (patrolWaypoints)
         {
-            currentTarget = GetNextTarget();
+            if (MoveToTarget())
+            {
+                currentTarget = GetNextTarget();
+            }
         }
+        
     }
 
     public bool MoveToTarget()
     {
-        Vector3 distanceVector = patrolWaypoints[currentTarget].position - transform.position;
-        if(distanceVector.magnitude < changeTargetDistance)
+        //Vector3 distanceVector = patrolWaypoints[currentTarget].position - transform.position;
+        Vector3 distanceVector = patrolWaypoints.GetComponentsInChildren<Transform>()[currentTarget].position - transform.position;
+        if (distanceVector.magnitude < changeTargetDistance)
         {
             return true;          
         }
@@ -37,9 +42,10 @@ public class Patrol : MonoBehaviour
     {
         currentTarget++;
 
-        if(currentTarget >= patrolWaypoints.Length)
+        int _count = patrolWaypoints.GetComponentsInChildren<Transform>().Length - 1;
+        if (currentTarget > _count)
         {
-            currentTarget = 0;
+            currentTarget = 1;
         }
 
         return currentTarget;
