@@ -16,7 +16,6 @@ public class Patrol : MonoBehaviour
         if (MoveToTarget())
         {
             currentTarget = GetNextTarget();
-            Debug.Log("gato");
         }
     }
 
@@ -25,12 +24,12 @@ public class Patrol : MonoBehaviour
         Vector3 distanceVector = patrolWaypoints[currentTarget].position - transform.position;
         if(distanceVector.magnitude < changeTargetDistance)
         {
-            return true;
+            return true;          
         }
 
         Vector3 velocityVector = distanceVector.normalized;
         transform.position += velocityVector * patrolSpeed * Time.deltaTime;
-
+      
         return false;
     }
 

@@ -197,13 +197,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   patrolSpeed: 5
-  changeTargetDistance: 0.1
+  changeTargetDistance: 0.5
   patrolWaypoints:
   - {fileID: 216901382}
   - {fileID: 1612166696}
   - {fileID: 241325456}
   - {fileID: 95810043}
-  currentTarget: 1
+  currentTarget: 3
 --- !u!65 &191645636
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -271,7 +271,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 191645634}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.7345147, y: 0, z: -4.22771}
+  m_LocalPosition: {x: 2.858733, y: 0, z: -0.2212984}
   m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
   m_Children: []
   m_Father: {fileID: 0}
