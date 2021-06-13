@@ -1,25 +1,26 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿
 using UnityEngine;
 
+[ExecuteInEditMode]
 public class Patrol : MonoBehaviour
 {
-    
+   
     public float patrolSpeed = 0f;
     public float changeTargetDistance = 0.1f;
     public Transform[] patrolWaypoints;
 
-    int currentTarget = 0;
-   
+    public int currentTarget = 0;
+
     void Update()
     {
         if (MoveToTarget())
         {
             currentTarget = GetNextTarget();
+            Debug.Log("gato");
         }
     }
 
-    private bool MoveToTarget()
+    public bool MoveToTarget()
     {
         Vector3 distanceVector = patrolWaypoints[currentTarget].position - transform.position;
         if(distanceVector.magnitude < changeTargetDistance)
@@ -33,7 +34,7 @@ public class Patrol : MonoBehaviour
         return false;
     }
 
-    private int GetNextTarget()
+    public int GetNextTarget()
     {
         currentTarget++;
 
