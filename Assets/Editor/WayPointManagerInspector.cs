@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Linq;
 
+
 [CustomEditor(typeof(WayPointManager))]
 public class WayPointManagerInspector : Editor
 {
@@ -24,7 +25,7 @@ public class WayPointManagerInspector : Editor
         //Recorro los hijos del WayPointManager y mientras no sea el padre( i = 0 )
         // agrego su posicion a la lista.
         _childrenCount = wpm.GetComponentsInChildren(typeof(Transform)).Length - 1;
-        
+       
     }
 
     public override void OnInspectorGUI()
@@ -38,7 +39,8 @@ public class WayPointManagerInspector : Editor
 
         EditorGUILayout.Space();
 
-        wpm._pos = EditorGUILayout.Vector3Field("VectorPos", wpm._pos);
+        //wpm._pos = EditorGUILayout.Vector3Field("VectorPos", wpm._pos);
+        wpm._pos = UpdateVectorPos(wpm._pos);
 
         EditorGUILayout.Space();
 
@@ -47,10 +49,14 @@ public class WayPointManagerInspector : Editor
   
             string wpName = "Waypoint " + (_childrenCount + 1) ;
             GameObject go = new GameObject(wpName);
+            //go.transform.localPosition = wpm._pos;
+           
+            go.AddComponent<BoxCollider>().isTrigger = true;
+            go.transform.parent = wpm.transform;
             go.transform.localPosition = wpm._pos;
-            go.AddComponent<BoxCollider>();
-            go.transform.parent = wpm.transform;     
-            wpm._pos = Vector3.zero;
+             wpm._pos = Vector3.zero;
+            // wpm.transform.position = wpm._pos;
+            wpm.transform.position = Vector3.zero;
         }
 
         EditorGUILayout.Space();
@@ -78,24 +84,14 @@ public class WayPointManagerInspector : Editor
                     EditorGUIUtility.fieldWidth = 2;
                     EditorGUIUtility.labelWidth = 1;
 
-                    //Al eliminar un wayPoint tambien elimino su posicion en la lista de _waypoints                   
-                    if (GUILayout.Button("Delete"))
-                    {
-                        DestroyImmediate(wpm.transform.GetChild(i - 1).gameObject);
-                    }
-
                     //se agrega esta validacion ya que el GetComponentsInChildren tiene en cuenta al padre
                     //y el GetChild solo a los hijos 
                     if (wpm.GetComponentsInChildren<Transform>().Length > i)
                    
-                    {
-                        
+                    {    
                         EditorGUIUtility.labelWidth = 60;
                         EditorGUIUtility.fieldWidth = 200;
-                       
-                        //Renombro a los vectores en el Inspector por si se eliminaron vectores y tambien los renombro en
-                        //el Hierarchy por el orden correspondiente
-                        EditorGUILayout.Vector3Field(string.Format("Vector{0} ", i), wpm.transform.GetChild(i - 1).localPosition);
+                       UpdateVectorPos( i,wpm.transform.GetChild(i - 1).localPosition);
                         wpm.transform.GetChild(i-1).name = "Waypoint " + (i);
                     }
 
@@ -122,7 +118,7 @@ public class WayPointManagerInspector : Editor
         {
             int _childCount = wpm.GetComponentsInChildren(typeof(Transform)).Length;
 
-            if (_childCount > 1)
+            if (_childCount > 2 &&  !string.IsNullOrEmpty( wpm.path) )
             {
                 _error = false;
                 GameObject go = new GameObject(wpm.path);
@@ -132,13 +128,20 @@ public class WayPointManagerInspector : Editor
                     if (i > 0)
                         wpm.GetComponentsInChildren<Transform>()[i].parent = go.transform;
                 }
+
+                CreatePrefabPath(go);
             }
             
             else
             {
                 _error = true;
-                _msg = "You must add a vector";
+                if (string.IsNullOrEmpty(wpm.path))
+                    _msg = "Name Path can't be empty.";
+                else
+                _msg = "You must add two vector to create a Path";
             }
+
+           
         }
 
         EditorGUILayout.Space();
@@ -146,21 +149,76 @@ public class WayPointManagerInspector : Editor
 
     private void OnSceneGUI()
     {
-        Handles.color = Color.red;
-        Handles.SphereHandleCap(1, wpm._pos, Quaternion.identity, 1f, Event.current.type);
+        /*bloqueo la posicion del gameObject padre(si tiene mas de un hijo)  para que no se mueva el gizmo de posicion y 
+         * afecte a los hijos */
+        if (wpm.GetComponentsInChildren(typeof(Transform)).Length > 2)
+            wpm.GetComponentsInChildren<Transform>()[0].localPosition = Vector3.zero;
 
-        int _count = wpm.GetComponentsInChildren(typeof(Transform)).Length-1;
-        for (int i = 1; i <= _count; i++)
-        {          
-            Handles.color = Color.red;
-           
-            Handles.SphereHandleCap(i, wpm.GetComponentsInChildren<Transform>()[i].localPosition, Quaternion.identity, 1f, Event.current.type);
-        }
+        Handles.color = Color.red;
+        if (wpm.GetComponentsInChildren(typeof(Transform)).Length == 1)  
+            wpm._pos = Handles.PositionHandle(wpm.transform.position, wpm.transform.rotation);
+
+       else
+            wpm._pos = Handles.PositionHandle(wpm._pos, wpm.transform.rotation);
+
+        Handles.SphereHandleCap(1, wpm._pos, Quaternion.identity, 1f, Event.current.type);
+        wpm._pos = UpdateVectorPos(wpm._pos);
+
+        if (wpm.GetComponentsInChildren<Transform>() != null)
+        {
+
+            int _count = wpm.GetComponentsInChildren(typeof(Transform)).Length-1;
+
+            for (int i = _count-1; i >=0; i--)
+            {
+                wpm.transform.GetChild(i).position = Handles.PositionHandle(wpm.transform.GetChild(i).position, wpm.transform.GetChild(i).rotation);
+                UpdateVectorPos( i+1,wpm.transform.GetChild(i).localPosition);
+                
+                if (Handles.Button(wpm.transform.GetChild(i).localPosition, Quaternion.identity, 1f, 0.4f, Handles.SphereHandleCap))
+                {
+                   
+                    DestroyImmediate(wpm.transform.GetChild(i).gameObject);
+                }
+
+            }
 
     }
 
+
+    }
     private void ErrorMessage(string msg)
     {
         EditorGUILayout.HelpBox(msg, MessageType.Error);
+    }
+
+    private void UpdateVectorPos(int indice,Vector3 vec)
+    {
+        EditorGUILayout.Vector3Field(string.Format("Vector{0} ", indice), vec);
+        Repaint();
+    }
+
+    private Vector3 UpdateVectorPos( Vector3 vec)
+    {
+        
+        EditorGUILayout.Vector3Field("VectorPos", vec);
+        Repaint();
+        return vec;
+    }
+
+    private void CreatePrefabPath(GameObject _prefab )
+    {
+        if (AssetDatabase.IsValidFolder("Assets/Prefabs"))
+        {
+            string path = AssetDatabase.GenerateUniqueAssetPath("Assets/Prefabs/" + _prefab.name + ".prefab");
+
+            PrefabUtility.SaveAsPrefabAsset(_prefab, path);
+        }
+        else
+        {
+            AssetDatabase.CreateFolder("Assets", "Prefabs");
+
+            string path = "Assets/Prefabs/" + _prefab.name + ".prefab";
+            PrefabUtility.SaveAsPrefabAsset(_prefab, path);
+        }
     }
 }
