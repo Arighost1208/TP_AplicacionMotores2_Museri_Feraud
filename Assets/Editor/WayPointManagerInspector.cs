@@ -146,7 +146,7 @@ public class WayPointManagerInspector : Editor
     {
         /*bloqueo la posicion del gameObject padre(si tiene mas de un hijo)  para que no se mueva el gizmo de posicion y 
          * afecte a los hijos */
-        if (wpm.GetComponentsInChildren(typeof(Transform)).Length > 2)
+        if (wpm.GetComponentsInChildren(typeof(Transform)).Length >= 2)
             wpm.GetComponentsInChildren<Transform>()[0].localPosition = Vector3.zero;
 
         Handles.color = Color.red;
@@ -154,7 +154,7 @@ public class WayPointManagerInspector : Editor
             wpm._pos = Handles.PositionHandle(wpm.transform.position, wpm.transform.rotation);
 
        else
-            wpm._pos = Handles.PositionHandle(wpm._pos, wpm.transform.rotation);
+            wpm._pos = Handles.PositionHandle(wpm._pos, Quaternion.identity);
 
         Handles.SphereHandleCap(1, wpm._pos, Quaternion.identity, 1f, Event.current.type);
         wpm._pos = UpdateVectorPos(wpm._pos);
@@ -164,20 +164,20 @@ public class WayPointManagerInspector : Editor
 
             int _count = wpm.GetComponentsInChildren(typeof(Transform)).Length-1;
 
-            for (int i = _count-1; i >=0; i--)
+            for (int i = _count - 1; i >= 0; i--)
             {
                 wpm.transform.GetChild(i).position = Handles.PositionHandle(wpm.transform.GetChild(i).position, wpm.transform.GetChild(i).rotation);
-                UpdateVectorPos( i+1,wpm.transform.GetChild(i).localPosition);
-                
+                UpdateVectorPos(i + 1, wpm.transform.GetChild(i).localPosition);
+
                 if (Handles.Button(wpm.transform.GetChild(i).localPosition, Quaternion.identity, 1f, 0.4f, Handles.SphereHandleCap))
                 {
-                   
+
                     DestroyImmediate(wpm.transform.GetChild(i).gameObject);
                 }
 
             }
 
-    }
+        }
 
 
     }
