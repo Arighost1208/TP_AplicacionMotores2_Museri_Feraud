@@ -146,8 +146,8 @@ public class WayPointManagerInspector : Editor
     {
         /*bloqueo la posicion del gameObject padre(si tiene mas de un hijo)  para que no se mueva el gizmo de posicion y 
          * afecte a los hijos */
-        if (wpm.GetComponentsInChildren(typeof(Transform)).Length >= 2)
-            wpm.GetComponentsInChildren<Transform>()[0].localPosition = Vector3.zero;
+        //if (wpm.GetComponentsInChildren(typeof(Transform)).Length >= 2)
+        //    wpm.GetComponentsInChildren<Transform>()[0].localPosition = Vector3.zero;
 
         Handles.color = Color.red;
         if (wpm.GetComponentsInChildren(typeof(Transform)).Length == 1 )  
@@ -169,7 +169,7 @@ public class WayPointManagerInspector : Editor
                 wpm.transform.GetChild(i).position = Handles.PositionHandle(wpm.transform.GetChild(i).position, wpm.transform.GetChild(i).rotation);
                 UpdateVectorPos(i + 1, wpm.transform.GetChild(i).localPosition);
 
-                if (Handles.Button(wpm.transform.GetChild(i).localPosition, Quaternion.identity, 1f, 0.4f, Handles.SphereHandleCap))
+                if (Handles.Button(wpm.transform.GetChild(i).position, Quaternion.identity, 1f, 0.4f, Handles.SphereHandleCap))
                 {
 
                     DestroyImmediate(wpm.transform.GetChild(i).gameObject);
@@ -189,7 +189,8 @@ public class WayPointManagerInspector : Editor
     private void UpdateVectorPos(int indice,Vector3 vec)
     {
         EditorGUILayout.Vector3Field(string.Format("Vector{0} ", indice), vec);
-        Repaint();
+        Repaint();//hacer un disabled
+
     }
 
     private Vector3 UpdateVectorPos( Vector3 vec)
