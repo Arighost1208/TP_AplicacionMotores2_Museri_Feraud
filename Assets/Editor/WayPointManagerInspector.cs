@@ -167,8 +167,20 @@ public class WayPointManagerInspector : Editor
             for (int i = _count - 1; i >= 0; i--)
             {
                 wpm.transform.GetChild(i).position = Handles.PositionHandle(wpm.transform.GetChild(i).position, wpm.transform.GetChild(i).rotation);
-                UpdateVectorPos(i + 1, wpm.transform.GetChild(i).localPosition);
-
+                UpdateVectorPos(i + 1, wpm.transform.GetChild(i).localPosition);                
+                if (i == _count - 1)
+                {
+                    Handles.color = Color.yellow;
+                }
+                else if(i == 0)
+                {
+                    Handles.color = Color.green;
+                }
+                else
+                {
+                    Handles.color = Color.blue;
+                }
+               
                 if (Handles.Button(wpm.transform.GetChild(i).position, Quaternion.identity, 1f, 0.4f, Handles.SphereHandleCap))
                 {
 
@@ -188,7 +200,8 @@ public class WayPointManagerInspector : Editor
 
     private void UpdateVectorPos(int indice,Vector3 vec)
     {
-        EditorGUILayout.Vector3Field(string.Format("Vector{0} ", indice), vec);
+        // EditorGUILayout.Vector3Field(string.Format("Vector{0} ", indice), vec);
+        EditorGUILayout.LabelField(string.Format("Vector{0} : {1} ", indice, vec));
         Repaint();//hacer un disabled
 
     }
