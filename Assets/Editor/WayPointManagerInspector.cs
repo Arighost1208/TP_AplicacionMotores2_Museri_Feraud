@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System.Linq;
-
+using UnityEditor.SceneManagement;
 
 [CustomEditor(typeof(WayPointManager))]
 public class WayPointManagerInspector : Editor
@@ -13,7 +13,7 @@ public class WayPointManagerInspector : Editor
     int _childrenCount;
     bool _error;
     string _msg;
-
+    bool _editMode;
     private void OnEnable()
     {
         wpm = target as WayPointManager;
@@ -35,162 +35,261 @@ public class WayPointManagerInspector : Editor
 
         EditorGUILayout.Space();
 
-        wpm.path = EditorGUILayout.TextField("Name Path : ", wpm.path);
+        _editMode = EditorGUILayout.Toggle("Edit Mode ", _editMode);
 
         EditorGUILayout.Space();
 
-        wpm._pos = UpdateVectorPos(wpm._pos);
+        if (_editMode)
+            wpm._transformToEdit = (Transform)EditorGUILayout.ObjectField("Path to edit ", wpm._transformToEdit, typeof(Transform), true);
 
+        else
+            wpm._transformToEdit = null;
+      
         EditorGUILayout.Space();
 
-        if (GUILayout.Button("Create WayPoint"))
-        {
-  
-            string wpName = "Waypoint " + (_childrenCount + 1) ;
-            GameObject go = new GameObject(wpName);  
-            go.AddComponent<BoxCollider>().isTrigger = true;
-            go.transform.parent = wpm.transform;
-            go.transform.localPosition = wpm._pos;
-             wpm._pos = Vector3.zero;
-         
-            wpm.transform.position = Vector3.zero;
-        }
-
-        EditorGUILayout.Space();
-
-        //Siempre y cuando tenga el WayPoint Manager algun hijo, se dibujara el boton de eliminar
-        // y se mostrara las posiciones de los wayPoints creados
-        if(wpm.GetComponentsInChildren(typeof(Transform)).Length > 1)
-        {
-            EditorGUI.DrawRect(GUILayoutUtility.GetRect(100, 2), Color.cyan);
+        if (!_editMode)
+        { 
+            wpm.path = EditorGUILayout.TextField("Name Path : ", wpm.path);
 
             EditorGUILayout.Space();
 
-            EditorGUILayout.Space();
+            UpdateVectorPos(wpm._pos);
 
             EditorGUILayout.Space();
 
-            //Comenzara a mostrarse los vectores creados desde el ultimo al primero,excluyendo al padre(WayPoint Manager i=0)
-            int _childCount = wpm.GetComponentsInChildren(typeof(Transform)).Length;
-            for (int i = _childCount - 1; i >= 0; i--)
+            if (GUILayout.Button("Create WayPoint"))
             {
-                if (i > 0)
-                {
-                    EditorGUILayout.BeginHorizontal();
-                    float originalValue = EditorGUIUtility.labelWidth;
-                    EditorGUIUtility.fieldWidth = 2;
-                    EditorGUIUtility.labelWidth = 1;
+  
+                string wpName = "Waypoint " + (_childrenCount + 1) ;
+                GameObject go = new GameObject(wpName);  
+                go.AddComponent<BoxCollider>().isTrigger = true;
+                go.transform.parent = wpm.transform;
+                go.transform.localPosition = wpm._pos;
+                 wpm._pos = Vector3.zero;
 
-                    //se agrega esta validacion ya que el GetComponentsInChildren tiene en cuenta al padre
-                    //y el GetChild solo a los hijos 
-                    if (wpm.GetComponentsInChildren<Transform>().Length > i)
-                   
-                    {    
-                        EditorGUIUtility.labelWidth = 60;
-                        EditorGUIUtility.fieldWidth = 200;
-                       UpdateVectorPos( i,wpm.transform.GetChild(i - 1).localPosition);
-                        wpm.transform.GetChild(i-1).name = "Waypoint " + (i);
-                    }
-                    EditorGUILayout.EndHorizontal();
-
-                    EditorGUILayout.Space();
-                   
-                }             
             }
 
             EditorGUILayout.Space();
 
-            EditorGUILayout.Space();
-
-            EditorGUILayout.Space();
-
-            EditorGUI.DrawRect(GUILayoutUtility.GetRect(100, 2), Color.cyan);
-        }
-       
-        EditorGUILayout.Space();
-
-        if (GUILayout.Button("Create Path"))
-        {
-            int _childCount = wpm.GetComponentsInChildren(typeof(Transform)).Length;
-
-            if (_childCount > 2 &&  !string.IsNullOrEmpty( wpm.path) )
+            //Siempre y cuando tenga el WayPoint Manager algun hijo, se dibujara el boton de eliminar
+            // y se mostrara las posiciones de los wayPoints creados
+            if(wpm.GetComponentsInChildren(typeof(Transform)).Length > 1)
             {
-                _error = false;
-                GameObject go = new GameObject(wpm.path);
+                EditorGUI.DrawRect(GUILayoutUtility.GetRect(100, 2), Color.cyan);
 
-                for (int i = _childCount - 1; i >= 1; i--)
+                EditorGUILayout.Space();
+
+                EditorGUILayout.Space();
+
+                EditorGUILayout.Space();
+
+                //Comenzara a mostrarse los vectores creados desde el ultimo al primero,excluyendo al padre(WayPoint Manager i=0)
+                int _childCount = wpm.GetComponentsInChildren(typeof(Transform)).Length;
+                for (int i = _childCount - 1; i >= 0; i--)
                 {
                     if (i > 0)
-                        wpm.GetComponentsInChildren<Transform>()[i].parent = go.transform;
+                    {
+                        EditorGUILayout.BeginHorizontal();
+                        float originalValue = EditorGUIUtility.labelWidth;
+                        EditorGUIUtility.fieldWidth = 2;
+                        EditorGUIUtility.labelWidth = 1;
+
+                        //se agrega esta validacion ya que el GetComponentsInChildren tiene en cuenta al padre
+                        //y el GetChild solo a los hijos 
+                        if (wpm.GetComponentsInChildren<Transform>().Length > i)
+                   
+                        {    
+                            EditorGUIUtility.labelWidth = 60;
+                            EditorGUIUtility.fieldWidth = 200;
+                           UpdateVectorPos( i,wpm.transform.GetChild(i - 1).localPosition);
+                            wpm.transform.GetChild(i-1).name = "Waypoint " + (i);
+                        }
+                        EditorGUILayout.EndHorizontal();
+
+                        EditorGUILayout.Space();
+                   
+                    }             
                 }
 
-                CreatePrefabPath(go);
+                EditorGUILayout.Space();
+
+                EditorGUILayout.Space();
+
+                EditorGUILayout.Space();
+
+                EditorGUI.DrawRect(GUILayoutUtility.GetRect(100, 2), Color.cyan);
             }
-            
-            else
+       
+            EditorGUILayout.Space();
+
+            if (GUILayout.Button("Create Path"))
             {
-                _error = true;
-                if (string.IsNullOrEmpty(wpm.path))
-                    _msg = "Name Path can't be empty.";
+                int _childCount = wpm.GetComponentsInChildren(typeof(Transform)).Length;
+
+                if (_childCount > 2 &&  !string.IsNullOrEmpty( wpm.path) )
+                {
+                    _error = false;
+                    GameObject go = new GameObject(wpm.path);
+
+                    for (int i = _childCount - 1; i >= 1; i--)
+                    {
+                        if (i > 0)
+                            wpm.GetComponentsInChildren<Transform>()[i].parent = go.transform;
+                    }
+
+                    CreatePrefabPath(go);
+                }
+            
                 else
-                _msg = "You must add two vector to create a Path";
+                {
+                    _error = true;
+                    if (string.IsNullOrEmpty(wpm.path))
+                        _msg = "Name Path can't be empty.";
+                    else
+                    _msg = "You must add two vector to create a Path";
+                }
+
             }
 
-           
-        }
+            EditorGUILayout.Space();
 
-        EditorGUILayout.Space();
+        }
+        //Edition Mode
+        else
+        {
+            if (wpm._transformToEdit != null  && wpm._transformToEdit.GetComponentsInChildren(typeof(Transform)).Length > 1)
+            {
+                EditorGUI.DrawRect(GUILayoutUtility.GetRect(100, 2), Color.cyan);
+
+                EditorGUILayout.Space();
+
+                EditorGUILayout.Space();
+
+                EditorGUILayout.Space();
+
+                int _childCount = wpm._transformToEdit.GetComponentsInChildren(typeof(Transform)).Length;
+                for (int i = _childCount - 1; i >= 0; i--)
+                {
+                    if (i > 0)
+                    {
+                        EditorGUILayout.BeginHorizontal();
+                        float originalValue = EditorGUIUtility.labelWidth;
+                        EditorGUIUtility.fieldWidth = 2;
+                        EditorGUIUtility.labelWidth = 1;
+
+                        if (wpm._transformToEdit.GetComponentsInChildren<Transform>().Length > i)
+
+                        {
+                            EditorGUIUtility.labelWidth = 60;
+                            EditorGUIUtility.fieldWidth = 200;
+                            UpdateVectorPos(i, wpm._transformToEdit.GetChild(i - 1).localPosition);
+                            wpm._transformToEdit.GetChild(i - 1).name = "Waypoint " + (i);
+                        }
+                        EditorGUILayout.EndHorizontal();
+
+                        EditorGUILayout.Space();
+
+                    }
+                }
+
+                EditorGUILayout.Space();
+
+                EditorGUILayout.Space();
+
+                EditorGUILayout.Space();
+
+                EditorGUI.DrawRect(GUILayoutUtility.GetRect(100, 2), Color.cyan);
+            }
+
+            EditorGUILayout.Space();
+        }
     }
 
     private void OnSceneGUI()
     {
-        /*bloqueo la posicion del gameObject padre(si tiene mas de un hijo)  para que no se mueva el gizmo de posicion y 
-         * afecte a los hijos */
-        //if (wpm.GetComponentsInChildren(typeof(Transform)).Length >= 2)
-        //    wpm.GetComponentsInChildren<Transform>()[0].localPosition = Vector3.zero;
 
-        Handles.color = Color.red;
-        if (wpm.GetComponentsInChildren(typeof(Transform)).Length == 1 )  
-            wpm._pos = Handles.PositionHandle(wpm.transform.position, wpm.transform.rotation);
+        if (!_editMode)
+        {
+            statusWaypoints(true);
+            Handles.color = Color.yellow;
 
-       else
             wpm._pos = Handles.PositionHandle(wpm._pos, Quaternion.identity);
 
-        Handles.SphereHandleCap(1, wpm._pos, Quaternion.identity, 1f, Event.current.type);
-        wpm._pos = UpdateVectorPos(wpm._pos);
+            Handles.SphereHandleCap(1, wpm._pos, Quaternion.identity, 1f, Event.current.type);
+            UpdateVectorPos(wpm._pos);
 
-        if (wpm.GetComponentsInChildren<Transform>() != null)
-        {
-
-            int _count = wpm.GetComponentsInChildren(typeof(Transform)).Length-1;
-
-            for (int i = _count - 1; i >= 0; i--)
+            if (wpm.GetComponentsInChildren<Transform>() != null)
             {
-                wpm.transform.GetChild(i).position = Handles.PositionHandle(wpm.transform.GetChild(i).position, wpm.transform.GetChild(i).rotation);
-                UpdateVectorPos(i + 1, wpm.transform.GetChild(i).localPosition);                
-                if (i == _count - 1)
-                {
-                    Handles.color = Color.yellow;
-                }
-                else if(i == 0)
-                {
-                    Handles.color = Color.green;
-                }
-                else
-                {
-                    Handles.color = Color.blue;
-                }
-               
-                if (Handles.Button(wpm.transform.GetChild(i).position, Quaternion.identity, 1f, 0.4f, Handles.SphereHandleCap))
-                {
 
-                    DestroyImmediate(wpm.transform.GetChild(i).gameObject);
+                int _count = wpm.GetComponentsInChildren(typeof(Transform)).Length - 1;
+
+                for (int i = _count - 1; i >= 0; i--)
+                {
+                    wpm.transform.GetChild(i).position = Handles.PositionHandle(wpm.transform.GetChild(i).position, wpm.transform.GetChild(i).rotation);
+                    UpdateVectorPos(i + 1, wpm.transform.GetChild(i).localPosition);
+                    if (i == _count - 1)
+                    {
+                        Handles.color = Color.red;
+                    }
+                    else if (i == 0)
+                    {
+                        Handles.color = Color.green;
+                    }
+                    else
+                    {
+                        Handles.color = Color.blue;
+                    }
+
+                    if (Handles.Button(wpm.transform.GetChild(i).position, Quaternion.identity, 1f, 0.4f, Handles.SphereHandleCap))
+                    {
+
+                        DestroyImmediate(wpm.transform.GetChild(i).gameObject);
+                    }
+
                 }
 
             }
-
+            Handles.color = Color.magenta;
+            WayDraw();
         }
+       
+        else
+        {
+            statusWaypoints(false);
+            if (wpm._transformToEdit != null  && wpm._transformToEdit.GetComponentsInChildren<Transform>() != null)
+            {
+                
+                int _count = wpm._transformToEdit.GetComponentsInChildren(typeof(Transform)).Length - 1;
 
+                for (int i = _count - 1; i >= 0; i--)
+                {
+                    wpm._transformToEdit.GetChild(i).position = Handles.PositionHandle(wpm._transformToEdit.GetChild(i).position, wpm._transformToEdit.GetChild(i).rotation);
+                    UpdateVectorPos(i + 1, wpm._transformToEdit.GetChild(i).localPosition);
+                    if (i == _count - 1)
+                    {
+                        Handles.color = Color.red;
+                    }
+                    else if (i == 0)
+                    {
+                        Handles.color = Color.green;
+                    }
+                    else
+                    {
+                        Handles.color = Color.blue;
+                    }
+
+                    if (Handles.Button(wpm._transformToEdit.GetChild(i).position, Quaternion.identity, 1f, 0.4f, Handles.SphereHandleCap))
+                    {
+
+                        DestroyImmediate(wpm._transformToEdit.GetChild(i).gameObject);
+                    }
+
+                }
+
+            }
+            Handles.color = Color.magenta;
+            WayDraw();
+        }
 
     }
     private void ErrorMessage(string msg)
@@ -200,18 +299,17 @@ public class WayPointManagerInspector : Editor
 
     private void UpdateVectorPos(int indice,Vector3 vec)
     {
-        // EditorGUILayout.Vector3Field(string.Format("Vector{0} ", indice), vec);
         EditorGUILayout.LabelField(string.Format("Vector{0} : {1} ", indice, vec));
-        Repaint();//hacer un disabled
+        Repaint();
 
     }
 
-    private Vector3 UpdateVectorPos( Vector3 vec)
+    private void UpdateVectorPos( Vector3 vec)
     {
-        
-        EditorGUILayout.Vector3Field("VectorPos", vec);
+
+        wpm._pos = EditorGUILayout.Vector3Field("VectorPos", vec);
         Repaint();
-        return vec;
+       
     }
 
     private void CreatePrefabPath(GameObject _prefab )
@@ -229,5 +327,46 @@ public class WayPointManagerInspector : Editor
             string path = "Assets/Prefabs/" + _prefab.name + ".prefab";
             PrefabUtility.SaveAsPrefabAsset(_prefab, path);
         }
+    }
+
+    private void WayDraw()
+    {
+        int _count;
+
+        if (!_editMode)
+            _count = wpm.GetComponentsInChildren(typeof(Transform)).Length;
+        else
+        {
+            if (wpm._transformToEdit != null)
+                _count = wpm._transformToEdit.GetComponentsInChildren(typeof(Transform)).Length;
+            else
+                _count = 0;
+        }
+            
+
+        for (int i = 1; i < _count; i++)
+        {
+            if (i + 1 < _count)
+            {
+                if (!_editMode)
+                    Handles.DrawLine(wpm.GetComponentsInChildren<Transform>()[i].position, wpm.GetComponentsInChildren<Transform>()[i + 1].position);
+                else
+                    Handles.DrawLine(wpm._transformToEdit.GetComponentsInChildren<Transform>()[i].position, wpm._transformToEdit.GetComponentsInChildren<Transform>()[i + 1].position);
+            }
+
+        }
+    }
+
+    private void statusWaypoints(bool _status)
+    {
+       
+        //if (_childrenCount > 0)
+        //{
+        //    for (int i = 0; i < _childrenCount; i++)
+        //    {
+                
+        //        wpm.transform.GetChild(i).gameObject.GetComponent<BoxCollider>().enabled=_status;
+        //    }
+        //}
     }
 }

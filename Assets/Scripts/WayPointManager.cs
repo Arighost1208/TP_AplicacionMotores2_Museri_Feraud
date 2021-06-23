@@ -7,7 +7,7 @@ public class WayPointManager : MonoBehaviour
 {
     public string path;
     public Vector3 _pos;
-
+    public Transform _transformToEdit;
     
 
 }
