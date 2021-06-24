@@ -193,6 +193,10 @@ public class WayPointManagerInspector : Editor
                     }
                     
                 }
+                if (wpm._countDefaultWayPoint!= 0)
+                    wpm._pos += Vector3.right * 3;
+
+                CleanDefaultVariables();
             }
             EditorGUILayout.Space();
             EditorGUI.DrawRect(GUILayoutUtility.GetRect(100, 2), Color.cyan);
@@ -253,8 +257,7 @@ public class WayPointManagerInspector : Editor
 
         if (!_editMode)
         {
-            
-            statusWaypoints(true);
+          
             Handles.color = Color.yellow;
 
             wpm._pos = Handles.PositionHandle(wpm._pos, Quaternion.identity);
@@ -301,7 +304,7 @@ public class WayPointManagerInspector : Editor
        
         else
         {
-            statusWaypoints(false);
+            
             if (wpm._transformToEdit != null  && wpm._transformToEdit.GetComponentsInChildren<Transform>() != null)
             {
                 
@@ -411,16 +414,11 @@ public class WayPointManagerInspector : Editor
         }
     }
 
-    private void statusWaypoints(bool _status)
+    private void CleanDefaultVariables()
     {
-       
-        //if (_childrenCount > 0)
-        //{
-        //    for (int i = 0; i < _childrenCount; i++)
-        //    {
-                
-        //        wpm.transform.GetChild(i).gameObject.GetComponent<BoxCollider>().enabled=_status;
-        //    }
-        //}
+        wpm._countDefaultWayPoint = 0;
+        wpm._distanceX = 0;
+        wpm._distanceY = 0;
+        wpm._distanceZ = 0;
     }
 }
