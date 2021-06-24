@@ -65,7 +65,7 @@ public class WayPointManagerInspector : Editor
                 go.AddComponent<BoxCollider>().isTrigger = true;
                 go.transform.parent = wpm.transform;
                 go.transform.localPosition = wpm._pos;
-                 wpm._pos = Vector3.zero;
+                 wpm._pos +=  Vector3.right*3;
 
             }
 
@@ -82,7 +82,7 @@ public class WayPointManagerInspector : Editor
                 EditorGUILayout.Space();
 
                 EditorGUILayout.Space();
-
+               
                 //Comenzara a mostrarse los vectores creados desde el ultimo al primero,excluyendo al padre(WayPoint Manager i=0)
                 int _childCount = wpm.GetComponentsInChildren(typeof(Transform)).Length;
                 for (int i = _childCount - 1; i >= 0; i--)
@@ -93,7 +93,7 @@ public class WayPointManagerInspector : Editor
                         float originalValue = EditorGUIUtility.labelWidth;
                         EditorGUIUtility.fieldWidth = 2;
                         EditorGUIUtility.labelWidth = 1;
-
+                        
                         //se agrega esta validacion ya que el GetComponentsInChildren tiene en cuenta al padre
                         //y el GetChild solo a los hijos 
                         if (wpm.GetComponentsInChildren<Transform>().Length > i)
@@ -101,7 +101,7 @@ public class WayPointManagerInspector : Editor
                         {    
                             EditorGUIUtility.labelWidth = 60;
                             EditorGUIUtility.fieldWidth = 200;
-                           UpdateVectorPos( i,wpm.transform.GetChild(i - 1).localPosition);
+                            UpdateVectorPos( i,wpm.transform.GetChild(i - 1).localPosition);
                             wpm.transform.GetChild(i-1).name = "Waypoint " + (i);
                         }
                         EditorGUILayout.EndHorizontal();
@@ -150,9 +150,52 @@ public class WayPointManagerInspector : Editor
                 }
 
             }
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+
+            EditorGUI.DrawRect(GUILayoutUtility.GetRect(100, 2), Color.cyan);
 
             EditorGUILayout.Space();
 
+            wpm._countDefaultWayPoint = EditorGUILayout.IntField("Count Waypoint : ", wpm._countDefaultWayPoint);
+            
+            EditorGUILayout.Space();
+            wpm._distanceX = EditorGUILayout.IntField("X Axis distance: ", wpm._distanceX);
+
+            EditorGUILayout.Space();
+            wpm._distanceY = EditorGUILayout.IntField("Y Axis distance: ", wpm._distanceY);
+
+            EditorGUILayout.Space();
+            wpm._distanceZ = EditorGUILayout.IntField("Z Axis distance: ", wpm._distanceZ);
+
+            EditorGUILayout.Space();
+            EditorGUILayout.Space();
+
+            if (GUILayout.Button("Create Waypoint Default"))
+            {
+                Vector3 _lastPos = Vector3.zero;
+                for (int i= 1; i<= wpm._countDefaultWayPoint; i++)
+                {
+                    string wpName = "WaypointDefault " + (i);
+                    GameObject go = new GameObject(wpName);
+                    go.AddComponent<BoxCollider>().isTrigger = true;
+                    go.transform.parent = wpm.transform;
+                    if (i == 1)
+                    {
+                        go.transform.localPosition = wpm._pos;
+                        _lastPos = go.transform.localPosition;
+                    }
+
+                    else
+                    {
+                        go.transform.localPosition = new Vector3(_lastPos.x + wpm._distanceX, _lastPos.y + wpm._distanceY, _lastPos.z + wpm._distanceZ);
+                        _lastPos  = go.transform.localPosition;
+                    }
+                    
+                }
+            }
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(GUILayoutUtility.GetRect(100, 2), Color.cyan);
         }
         //Edition Mode
         else
@@ -210,6 +253,7 @@ public class WayPointManagerInspector : Editor
 
         if (!_editMode)
         {
+            
             statusWaypoints(true);
             Handles.color = Color.yellow;
 
@@ -225,6 +269,7 @@ public class WayPointManagerInspector : Editor
 
                 for (int i = _count - 1; i >= 0; i--)
                 {
+                    
                     wpm.transform.GetChild(i).position = Handles.PositionHandle(wpm.transform.GetChild(i).position, wpm.transform.GetChild(i).rotation);
                     UpdateVectorPos(i + 1, wpm.transform.GetChild(i).localPosition);
                     if (i == _count - 1)
@@ -250,6 +295,7 @@ public class WayPointManagerInspector : Editor
 
             }
             Handles.color = Color.magenta;
+            
             WayDraw();
         }
        
@@ -264,6 +310,7 @@ public class WayPointManagerInspector : Editor
                 for (int i = _count - 1; i >= 0; i--)
                 {
                     wpm._transformToEdit.GetChild(i).position = Handles.PositionHandle(wpm._transformToEdit.GetChild(i).position, wpm._transformToEdit.GetChild(i).rotation);
+                    
                     UpdateVectorPos(i + 1, wpm._transformToEdit.GetChild(i).localPosition);
                     if (i == _count - 1)
                     {
@@ -300,6 +347,7 @@ public class WayPointManagerInspector : Editor
     private void UpdateVectorPos(int indice,Vector3 vec)
     {
         EditorGUILayout.LabelField(string.Format("Vector{0} : {1} ", indice, vec));
+        
         Repaint();
 
     }
@@ -352,6 +400,12 @@ public class WayPointManagerInspector : Editor
                     Handles.DrawLine(wpm.GetComponentsInChildren<Transform>()[i].position, wpm.GetComponentsInChildren<Transform>()[i + 1].position);
                 else
                     Handles.DrawLine(wpm._transformToEdit.GetComponentsInChildren<Transform>()[i].position, wpm._transformToEdit.GetComponentsInChildren<Transform>()[i + 1].position);
+            }
+
+            if (i +1 == _count && !_editMode)
+            {
+                Handles.color = Color.cyan;
+                Handles.DrawLine(wpm.GetComponentsInChildren<Transform>()[_count-1].position, wpm._pos);
             }
 
         }
