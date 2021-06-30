@@ -121,6 +121,7 @@ public class WayPointManagerInspector : Editor
                 EditorGUI.DrawRect(GUILayoutUtility.GetRect(100, 2), Color.cyan);
             }
        
+
             EditorGUILayout.Space();
 
             if (GUILayout.Button("Create Path"))
