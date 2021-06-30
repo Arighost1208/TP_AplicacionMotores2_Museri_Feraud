@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using System.Linq;
 using UnityEditor.SceneManagement;
-[ExecuteInEditMode]
+
 [CustomEditor(typeof(WayPointManager))]
 public class WayPointManagerInspector : Editor
 {
@@ -14,8 +14,6 @@ public class WayPointManagerInspector : Editor
     bool _error;
     string _msg;
     bool _editMode;
-
-
     private void OnEnable()
     {
         wpm = target as WayPointManager;
@@ -32,18 +30,6 @@ public class WayPointManagerInspector : Editor
 
     public override void OnInspectorGUI()
     {
-
-        Vector3 newPos = EditorGUILayout.Vector3Field("Waypoint", wpm._pos);
-
-        EditorGUI.BeginChangeCheck();
-
-
-        if (EditorGUI.EndChangeCheck())
-        {
-            Undo.RecordObject(wpm, "Waypoint");
-            wpm._pos = newPos;
-        }
-
         if (_error)
             ErrorMessage(_msg);
 
@@ -70,22 +56,16 @@ public class WayPointManagerInspector : Editor
             UpdateVectorPos(wpm._pos);
 
             EditorGUILayout.Space();
-           
+
             if (GUILayout.Button("Create WayPoint"))
             {
-
-                string wpName = "Waypoint " + (_childrenCount + 1);
-               GameObject go = new GameObject(wpName);
+  
+                string wpName = "Waypoint " + (_childrenCount + 1) ;
+                GameObject go = new GameObject(wpName);  
                 go.AddComponent<BoxCollider>().isTrigger = true;
                 go.transform.parent = wpm.transform;
                 go.transform.localPosition = wpm._pos;
-                wpm._pos +=  Vector3.right*3;
-                //Undo.RegisterCreatedObjectUndo(wpm, "Guardar pos");
-                Undo.PerformUndo();
-
-
-                EditorGUILayout.Space();
-                EditorGUI.DrawRect(GUILayoutUtility.GetRect(100, 2), Color.cyan);
+                 wpm._pos +=  Vector3.right*3;
 
             }
 
@@ -105,7 +85,6 @@ public class WayPointManagerInspector : Editor
                
                 //Comenzara a mostrarse los vectores creados desde el ultimo al primero,excluyendo al padre(WayPoint Manager i=0)
                 int _childCount = wpm.GetComponentsInChildren(typeof(Transform)).Length;
-
                 for (int i = _childCount - 1; i >= 0; i--)
                 {
                     if (i > 0)
@@ -124,7 +103,6 @@ public class WayPointManagerInspector : Editor
                             EditorGUIUtility.fieldWidth = 200;
                             UpdateVectorPos( i,wpm.transform.GetChild(i - 1).localPosition);
                             wpm.transform.GetChild(i-1).name = "Waypoint " + (i);
-                          
                         }
                         EditorGUILayout.EndHorizontal();
 
@@ -202,7 +180,6 @@ public class WayPointManagerInspector : Editor
                     GameObject go = new GameObject(wpName);
                     go.AddComponent<BoxCollider>().isTrigger = true;
                     go.transform.parent = wpm.transform;
-                    Undo.RegisterCreatedObjectUndo(go, "Guardar pos");
                     if (i == 1)
                     {
                         go.transform.localPosition = wpm._pos;
@@ -221,9 +198,8 @@ public class WayPointManagerInspector : Editor
 
                 CleanDefaultVariables();
             }
-
-
-
+            EditorGUILayout.Space();
+            EditorGUI.DrawRect(GUILayoutUtility.GetRect(100, 2), Color.cyan);
         }
         //Edition Mode
         else
@@ -255,7 +231,6 @@ public class WayPointManagerInspector : Editor
                             EditorGUIUtility.fieldWidth = 200;
                             UpdateVectorPos(i, wpm._transformToEdit.GetChild(i - 1).localPosition);
                             wpm._transformToEdit.GetChild(i - 1).name = "Waypoint " + (i);
-                         
                         }
                         EditorGUILayout.EndHorizontal();
 
@@ -274,8 +249,6 @@ public class WayPointManagerInspector : Editor
             }
 
             EditorGUILayout.Space();
-
-
         }
     }
 
@@ -291,15 +264,15 @@ public class WayPointManagerInspector : Editor
 
             Handles.SphereHandleCap(1, wpm._pos, Quaternion.identity, 1f, Event.current.type);
             UpdateVectorPos(wpm._pos);
-           
+
             if (wpm.GetComponentsInChildren<Transform>() != null)
             {
-              
+
                 int _count = wpm.GetComponentsInChildren(typeof(Transform)).Length - 1;
 
                 for (int i = _count - 1; i >= 0; i--)
                 {
-                 
+                    
                     wpm.transform.GetChild(i).position = Handles.PositionHandle(wpm.transform.GetChild(i).position, wpm.transform.GetChild(i).rotation);
                     UpdateVectorPos(i + 1, wpm.transform.GetChild(i).localPosition);
                     if (i == _count - 1)
@@ -308,17 +281,17 @@ public class WayPointManagerInspector : Editor
                     }
                     else if (i == 0)
                     {
-                        Handles.color = Color.green;                    
+                        Handles.color = Color.green;
                     }
                     else
                     {
-                        Handles.color = Color.blue;                       
+                        Handles.color = Color.blue;
                     }
 
                     if (Handles.Button(wpm.transform.GetChild(i).position, Quaternion.identity, 1f, 0.4f, Handles.SphereHandleCap))
                     {
 
-                       Undo.DestroyObjectImmediate(wpm.transform.GetChild(i).gameObject);
+                        DestroyImmediate(wpm.transform.GetChild(i).gameObject);
                     }
 
                 }
@@ -339,12 +312,9 @@ public class WayPointManagerInspector : Editor
 
                 for (int i = _count - 1; i >= 0; i--)
                 {
-                   
                     wpm._transformToEdit.GetChild(i).position = Handles.PositionHandle(wpm._transformToEdit.GetChild(i).position, wpm._transformToEdit.GetChild(i).rotation);
                     
                     UpdateVectorPos(i + 1, wpm._transformToEdit.GetChild(i).localPosition);
-                    
-
                     if (i == _count - 1)
                     {
                         Handles.color = Color.red;
@@ -360,7 +330,8 @@ public class WayPointManagerInspector : Editor
 
                     if (Handles.Button(wpm._transformToEdit.GetChild(i).position, Quaternion.identity, 1f, 0.4f, Handles.SphereHandleCap))
                     {
-                        Undo.DestroyObjectImmediate(wpm._transformToEdit.GetChild(i).gameObject);
+
+                        DestroyImmediate(wpm._transformToEdit.GetChild(i).gameObject);
                     }
 
                 }
@@ -378,15 +349,16 @@ public class WayPointManagerInspector : Editor
 
     private void UpdateVectorPos(int indice,Vector3 vec)
     {
-        EditorGUILayout.LabelField(string.Format("Vector{0} : {1} ", indice, vec));    
+        EditorGUILayout.LabelField(string.Format("Vector{0} : {1} ", indice, vec));
+        
         Repaint();
 
     }
 
-    private void UpdateVectorPos(Vector3 vec)
+    private void UpdateVectorPos( Vector3 vec)
     {
-      
-        wpm._pos = EditorGUILayout.Vector3Field("VectorPos", vec);        
+
+        wpm._pos = EditorGUILayout.Vector3Field("VectorPos", vec);
         Repaint();
        
     }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[ExecuteInEditMode]
+//[ExecuteInEditMode]
 public class WayPointManager : MonoBehaviour
 {
     public string path;
@@ -12,8 +12,6 @@ public class WayPointManager : MonoBehaviour
     public int _distanceX;
     public int _distanceY;
     public int _distanceZ;
-  
-    
     
 
 }
