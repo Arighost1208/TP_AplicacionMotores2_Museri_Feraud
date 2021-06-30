@@ -21,7 +21,7 @@ public class WayPointManagerInspector : Editor
         titleStyle.alignment = TextAnchor.MiddleCenter;
         titleStyle.fontSize = 15;
         titleStyle.fontStyle = FontStyle.BoldAndItalic;
-  
+      //  wpm._pos = new Vector3(3, 3, 3);
         //Recorro los hijos del WayPointManager y mientras no sea el padre( i = 0 )
         // agrego su posicion a la lista.
         _childrenCount = wpm.GetComponentsInChildren(typeof(Transform)).Length - 1;
@@ -30,6 +30,7 @@ public class WayPointManagerInspector : Editor
 
     public override void OnInspectorGUI()
     {
+
         if (_error)
             ErrorMessage(_msg);
 
@@ -131,13 +132,20 @@ public class WayPointManagerInspector : Editor
                     _error = false;
                     GameObject go = new GameObject(wpm.path);
 
-                    for (int i = _childCount - 1; i >= 1; i--)
+                    //for (int i = _childCount - 1; i >= 1; i--)
+                    //{
+                    //    if (i > 0)
+                    //        wpm.GetComponentsInChildren<Transform>()[i].parent = go.transform;
+                    //}
+
+                    for (int i = 1; i <= _childCount - 1; i++)
                     {
                         if (i > 0)
-                            wpm.GetComponentsInChildren<Transform>()[i].parent = go.transform;
+                            wpm.GetComponentsInChildren<Transform>()[1].parent = go.transform;
                     }
 
                     CreatePrefabPath(go);
+                    wpm._pos = Vector3.zero;
                 }
             
                 else
@@ -194,7 +202,7 @@ public class WayPointManagerInspector : Editor
                     
                 }
                 if (wpm._countDefaultWayPoint!= 0)
-                    wpm._pos += Vector3.right * 3;
+                    wpm._pos = _lastPos + new Vector3(wpm._distanceX, wpm._distanceY, wpm._distanceZ) ;
 
                 CleanDefaultVariables();
             }
@@ -291,7 +299,7 @@ public class WayPointManagerInspector : Editor
                     if (Handles.Button(wpm.transform.GetChild(i).position, Quaternion.identity, 1f, 0.4f, Handles.SphereHandleCap))
                     {
 
-                        DestroyImmediate(wpm.transform.GetChild(i).gameObject);
+                        Undo.DestroyObjectImmediate(wpm.transform.GetChild(i).gameObject);
                     }
 
                 }
@@ -331,7 +339,7 @@ public class WayPointManagerInspector : Editor
                     if (Handles.Button(wpm._transformToEdit.GetChild(i).position, Quaternion.identity, 1f, 0.4f, Handles.SphereHandleCap))
                     {
 
-                        DestroyImmediate(wpm._transformToEdit.GetChild(i).gameObject);
+                        Undo.DestroyObjectImmediate(wpm.transform.GetChild(i).gameObject);
                     }
 
                 }
